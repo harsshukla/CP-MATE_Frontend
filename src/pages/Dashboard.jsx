@@ -5,14 +5,13 @@ import StatsCard from '../components/StatsCard'
 import ActivityHeatmap from '../components/ActivityHeatmap'
 import RatingGraph from '../components/RatingGraph'
 import ContestTable from '../components/ContestTable'
-import { CheckCircle, Flame, Zap, BarChart3 } from 'lucide-react'
+import { CheckCircle, Flame, Zap, BarChart3, Trophy } from 'lucide-react'
 import { leetcodeAPI } from '../services/api'
 
 const Dashboard = () => {
   const { user } = useAuth()
   const { stats, loading, error, refreshStats } = useStats()
 
-  // LeetCode contest state
   const [lcContestData, setLcContestData] = useState(null)
   const [lcContestLoading, setLcContestLoading] = useState(true)
   const [lcContestError, setLcContestError] = useState(null)
@@ -34,14 +33,12 @@ const Dashboard = () => {
     fetchLeetCodeContest()
   }, [user?.handles?.leetcode])
 
-  // Helper to get stats by platform
   const getPlatformStats = (platform) =>
     stats?.find((s) => s.platform === platform) || {}
 
   const leetcodeStats = getPlatformStats('leetcode')
   const codeforcesStats = getPlatformStats('codeforces')
 
-  // Merge daily activity for heatmap
   const mergedActivity = [
     ...(leetcodeStats?.activity?.dailyActivity || []),
     ...(codeforcesStats?.activity?.dailyActivity || [])
@@ -56,14 +53,11 @@ const Dashboard = () => {
   }, {})
   const heatmapData = Object.values(mergedActivity)
 
-  // LeetCode solved count: sum of easy+medium+hard only
   const leetcodeSolved =
     (leetcodeStats?.problems?.byDifficulty?.easy || 0) +
     (leetcodeStats?.problems?.byDifficulty?.medium || 0) +
     (leetcodeStats?.problems?.byDifficulty?.hard || 0)
-  // Codeforces solved
   const codeforcesSolved = codeforcesStats?.problems?.solved || 0
-  // Overview values
   const totalSolved = leetcodeSolved + codeforcesSolved
   const streak = heatmapData.length > 0 ? Math.max(...heatmapData.map(d => d.problemsSolved > 0 ? 1 : 0)) : 0
 
@@ -109,15 +103,16 @@ const Dashboard = () => {
       <ActivityHeatmap data={heatmapData} />
 
       {/* LeetCode Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start min-h-[420px]">
+        <div className="space-y-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <StatsCard
               title="LeetCode Solved"
               value={leetcodeSolved}
               icon={CheckCircle}
               color="primary"
               subtitle="Problems solved on LeetCode"
+              className="py-2 px-3 text-base w-full"
             />
             <StatsCard
               title="LeetCode Rating"
@@ -125,48 +120,47 @@ const Dashboard = () => {
               icon={CheckCircle}
               color="warning"
               subtitle="Current LeetCode contest rating"
+              className="py-2 px-3 text-base w-full"
             />
           </div>
-          <RatingGraph
-            data={(() => {
-              const history = (lcContestData?.userContestRankingHistory || [])
-                .filter(h => typeof h.rating === 'number');
-              if (!history.length) return [];
-              // Sort by contest date
-              const sorted = history.slice().sort((a, b) => a.contest.startTime - b.contest.startTime);
-              // Map to chart data
-              return sorted.map(h => ({
-                name: h.contest?.title,
-                date: h.contest?.startTime ? new Date(h.contest.startTime * 1000) : null,
-                rating: h.rating,
-                rank: h.ranking
-              }));
-            })()}
-            title={<span className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-yellow-500" />LeetCode Rating</span>}
-            yMin={1300}
-          />
-        </div>
-        <div>
-          {/* LeetCode Last 5 Contests */}
-          <ContestTable
-            contests={
-              (() => {
+          <div className="w-full" style={{ minWidth: 0 }}>
+            <RatingGraph
+              data={(() => {
                 const history = (lcContestData?.userContestRankingHistory || [])
-                  .filter(h => typeof h.ranking === 'number' && h.contest?.startTime)
-                  .sort((a, b) => b.contest.startTime - a.contest.startTime)
-                  .slice(0, 5)
-                  .map(h => ({
-                    name: h.contest?.title,
-                    date: h.contest?.startTime ? new Date(h.contest.startTime * 1000) : null,
-                    rank: h.ranking,
-                    rating: h.rating,
-                    participants: h.totalParticipants || lcContestData?.userContestRanking?.totalParticipants || null
-                  }));
-                return history;
-              })()
-            }
-            title="LeetCode (last 5 contests)"
+                  .filter(h => typeof h.rating === 'number')
+                if (!history.length) return []
+                const sorted = history.slice().sort((a, b) => a.contest.startTime - b.contest.startTime)
+                return sorted.map(h => ({
+                  name: h.contest?.title,
+                  date: h.contest?.startTime ? new Date(h.contest.startTime * 1000) : null,
+                  rating: h.rating,
+                  rank: h.ranking
+                }))
+              })()}
+              title={<span className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-yellow-500" />LeetCode Rating</span>}
+              yMin={1300}
+              style={{ height: 340, minHeight: 260, width: '100%' }}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col h-full justify-stretch min-h-[420px]">
+          <ContestTable
+            contests={(() => {
+              const participated = (lcContestData?.userContestRankingHistory || [])
+                .filter(h => typeof h.ranking === 'number' && h.ranking !== 0 && h.contest?.startTime && typeof h.rating === 'number')
+                .sort((a, b) => b.contest.startTime - a.contest.startTime)
+                .map(h => ({
+                  name: h.contest?.title,
+                  date: h.contest?.startTime ? new Date(h.contest.startTime * 1000) : null,
+                  rank: h.ranking,
+                  rating: h.rating,
+                  participants: h.totalParticipants || lcContestData?.userContestRanking?.totalParticipants || null
+                }))
+              return participated
+            })()}
+            title="LeetCode Contests"
             platform="LeetCode"
+            className="h-full min-h-[420px]"
           />
           {lcContestLoading && <div className="text-gray-500 text-center mt-4">Loading...</div>}
           {lcContestError && <div className="text-red-600 text-center mt-4">{lcContestError}</div>}
@@ -174,15 +168,16 @@ const Dashboard = () => {
       </div>
 
       {/* Codeforces Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start min-h-[420px]">
+        <div className="space-y-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
             <StatsCard
               title="Codeforces Solved"
               value={codeforcesSolved}
               icon={CheckCircle}
               color="primary"
               subtitle="Problems solved on Codeforces"
+              className="py-2 px-3 text-base w-full"
             />
             <StatsCard
               title="Codeforces Rating"
@@ -190,63 +185,61 @@ const Dashboard = () => {
               icon={CheckCircle}
               color="warning"
               subtitle="Current Codeforces rating"
+              className="py-2 px-3 text-base w-full"
             />
           </div>
-          <RatingGraph
-            data={(() => {
-              const ratingHistory = codeforcesStats?.rating?.history || [];
-              const contestHistory = codeforcesStats?.contests?.history || [];
-              if (!ratingHistory.length) return [];
-              // Build a map by contest name (lowercase, trimmed)
-              const contestMap = {};
-              contestHistory.forEach(c => {
-                if (c.name) contestMap[c.name.trim().toLowerCase()] = c;
-              });
-              return ratingHistory.map(h => {
-                // Try to match by contest name
-                let contest = null;
-                if (h.contest) {
-                  contest = contestMap[h.contest.trim().toLowerCase()];
-                }
-                // Fallback: try to match by date if contest name is missing
-                if (!contest && h.date) {
-                  contest = contestHistory.find(
-                    c => c.date && new Date(c.date).toDateString() === new Date(h.date).toDateString()
-                  );
-                }
-                // If rank is 0 or undefined, set to null (for NA in tooltip)
-                let rank = contest?.rank;
-                if (!rank) rank = null;
-                return {
-                  name: contest?.name || h.contest || '',
-                  date: h.date ? new Date(h.date).getTime() : null,
-                  rating: h.rating,
-                  rank: rank
-                };
-              });
-            })()}
-            title={<span className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-blue-500" />Codeforces Rating</span>}
-          />
+          <div className="w-full" style={{ minWidth: 0 }}>
+            <RatingGraph
+              data={(() => {
+                const ratingHistory = codeforcesStats?.rating?.history || []
+                const contestHistory = codeforcesStats?.contests?.history || []
+                if (!ratingHistory.length) return []
+                const contestMap = {}
+                contestHistory.forEach(c => {
+                  if (c.name) contestMap[c.name.trim().toLowerCase()] = c
+                })
+                return ratingHistory.map(h => {
+                  let contest = null
+                  if (h.contest) {
+                    contest = contestMap[h.contest.trim().toLowerCase()]
+                  }
+                  if (!contest && h.date) {
+                    contest = contestHistory.find(
+                      c => c.date && new Date(c.date).toDateString() === new Date(h.date).toDateString()
+                    )
+                  }
+                  let rank = contest?.rank
+                  if (!rank) rank = null
+                  return {
+                    name: contest?.name || h.contest || '',
+                    date: h.date ? new Date(h.date).getTime() : null,
+                    rating: h.rating,
+                    rank: rank
+                  }
+                })
+              })()}
+              title={<span className="flex items-center gap-2"><BarChart3 className="w-5 h-5 text-blue-500" />Codeforces Rating</span>}
+              style={{ height: 340, minHeight: 260, width: '100%' }}
+            />
+          </div>
         </div>
-        <div>
+        <div className="flex flex-col h-full justify-stretch min-h-[420px]">
           <ContestTable
-            contests={
-              (() => {
-                const history = (codeforcesStats?.contests?.history || [])
-                  .filter(c => c.date && typeof c.rank === 'number')
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
-                  .slice(0, 5)
-                  .map(c => ({
-                    name: c.name,
-                    date: c.date,
-                    rank: c.rank,
-                    rating: c.rating
-                  }));
-                return history;
-              })()
-            }
-            title="Codeforces (last 5 attempted contests)"
+            contests={(() => {
+              const history = (codeforcesStats?.contests?.history || [])
+                .filter(c => typeof c.rank === 'number' && c.rank !== 0 && typeof c.rating === 'number' && c.date)
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .map(c => ({
+                  name: c.name,
+                  date: c.date,
+                  rank: c.rank,
+                  rating: c.rating
+                }))
+              return history
+            })()}
+            title="Codeforces Contests"
             platform="Codeforces"
+            className="h-full min-h-[420px]"
           />
         </div>
       </div>
@@ -260,4 +253,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard 
+export default Dashboard
