@@ -49,10 +49,13 @@ const ContestTable = ({ contests = [], title = 'Recent Contests', platform = '',
 
   return (
     <div className={`card ${className}`}>
-      <div className="card-header">
+      <div className="card-header flex items-center justify-between">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white">
           {title}
         </h3>
+        <span className="ml-4 inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">
+          Contests Given: {contests.length}
+        </span>
       </div>
       <div className="card-body">
         {contestsWithDelta.length > 0 ? (
