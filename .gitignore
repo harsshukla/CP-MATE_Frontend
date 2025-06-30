@@ -1,0 +1,40 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# dotenv environment files
+.env
+.env.*
+
+# Build output
+dist/
+build/
+
+# Vite / React specific
+.vite/
+.vitepress/
+client/.next/
+client/.vercel/
+
+# Editor configs
+.vscode/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+*.cache/
+*.bak
+
+# Optional: ignore local database or uploads
+uploads/
+database/
