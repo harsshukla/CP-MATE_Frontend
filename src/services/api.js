@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 // Set up axios defaults
+// IMPORTANT: Set VITE_API_URL in your Vercel project settings to your deployed backend URL, e.g. https://your-backend.onrender.com/api
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const api = axios.create({
@@ -8,6 +9,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true // Allow cookies for cross-origin auth
 })
 
 // Add auth token to requests
