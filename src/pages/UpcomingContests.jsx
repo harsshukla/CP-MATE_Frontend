@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
-import axios from 'axios'
+import api from '../services/api'
 
 const getMonthRange = (date) => {
   const start = new Date(date.getFullYear(), date.getMonth(), 1)
@@ -31,7 +31,7 @@ const UpcomingContests = () => {
       setError(null)
       try {
         // Fetch merged upcoming contests from backend
-        const res = await axios.get('/api/contests/upcoming')
+        const res = await api.get('/contests/upcoming')
         const { start, end } = getMonthRange(new Date())
         // Only show contests in the current month
         const monthContests = (res.data || []).filter(
