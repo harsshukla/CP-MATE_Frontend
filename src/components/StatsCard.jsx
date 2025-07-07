@@ -26,22 +26,22 @@ const StatsCard = ({
   }
 
   return (
-    <div className={`card ${className}`}>
-      <div className="card-body">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
+    <div className={`card break-words w-full ${className}`}>
+      <div className="card-body p-3 sm:p-4 md:p-6 text-sm sm:text-base w-full">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 min-w-0 w-full">
+          <div className="flex items-center min-w-0 w-full">
             <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
               <Icon className="w-6 h-6" />
             </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <div className="ml-4 min-w-0 w-full">
+              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
                 {title}
               </p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white truncate break-words">
                 {formatValue(value)}
               </p>
               {subtitle && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 break-words truncate">
                   {subtitle}
                 </p>
               )}

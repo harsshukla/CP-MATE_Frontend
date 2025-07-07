@@ -105,28 +105,31 @@ const ActivityHeatmap = ({ data = [], title = 'Activity Heatmap', className = ''
 
   return (
     <div className={`card ${className}`} ref={containerRef} style={{ position: 'relative' }}>
-      <div className="card-header">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white">{title}</h3>
+      <div className="card-header p-3 sm:p-4 md:p-6">
+        <h3 className="text-lg sm:text-xl font-medium text-gray-900 dark:text-white">{title}</h3>
       </div>
-      <div className="card-body">
-        <div className="overflow-x-auto">
-          <CalendarHeatmap
-            startDate={startDate}
-            endDate={endDate}
-            values={heatmapData}
-            classForValue={getColorClass}
-            onClick={handleCellClick}
-            showWeekdayLabels={true}
-            weekdayLabels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
-            monthLabels={[
-              'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-            ]}
-            gutterSize={1}
-            square={true}
-            width={600}
-            height={90}
-          />
+      <div className="card-body p-3 sm:p-4 md:p-6">
+        <div className="overflow-x-auto w-full max-w-full">
+          <div className="w-full" style={{ minWidth: 0 }}>
+            <CalendarHeatmap
+              startDate={startDate}
+              endDate={endDate}
+              values={heatmapData}
+              classForValue={getColorClass}
+              onClick={handleCellClick}
+              showWeekdayLabels={true}
+              weekdayLabels={['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
+              monthLabels={[
+                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+              ]}
+              gutterSize={1}
+              square={true}
+              width={undefined}
+              style={{ width: '100%', minWidth: 240, maxWidth: '100%' }}
+              height={90}
+            />
+          </div>
           {tooltip.visible && (
             <div
               style={{

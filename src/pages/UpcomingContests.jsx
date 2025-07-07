@@ -103,13 +103,13 @@ const UpcomingContests = () => {
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
   return (
-    <div className="w-full min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center py-8">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Upcoming Contests</h1>
+    <div className="w-full min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center py-4 sm:py-8 px-2 sm:px-4">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-8">Upcoming Contests</h1>
       <div className="w-full flex justify-center">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-6xl">
-          <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center">{monthName} {year}</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 sm:p-6 w-full max-w-6xl overflow-x-auto">
+          <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6 text-center">{monthName} {year}</h3>
           <div className="overflow-x-auto">
-            <table className="w-full border-separate border-spacing-2">
+            <table className="w-full border-separate border-spacing-2 min-w-[600px]">
               <thead>
                 <tr>
                   {weekDays.map(day => (
@@ -159,7 +159,7 @@ const UpcomingContests = () => {
                               return (
                                 <button
                                   key={idx}
-                                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 focus:outline-none"
+                                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 focus:outline-none break-words max-w-full"
                                   onClick={() => {
                                     if (contest.platform === 'LeetCode') {
                                       console.log('contest.titleSlug:', contest.titleSlug);

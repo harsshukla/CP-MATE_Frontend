@@ -50,9 +50,9 @@ const RatingGraph = ({ data = [], title = 'Rating Progress', platform = '', clas
   }
 
   return (
-    <div className={`card ${className}`}>
-      <div className="card-header flex flex-col md:flex-row md:items-center md:justify-between">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+    <div className={`card w-full ${className}`}>
+      <div className="card-header flex flex-col md:flex-row md:items-center md:justify-between p-3 sm:p-4 md:p-6">
+        <h3 className="text-lg sm:text-xl font-medium text-gray-900 dark:text-white">
           {title} {platform && `(${platform})`}
         </h3>
         {latestContest && (
@@ -64,9 +64,9 @@ const RatingGraph = ({ data = [], title = 'Rating Progress', platform = '', clas
           </div>
         )}
       </div>
-      <div className="card-body">
+      <div className="card-body p-3 sm:p-4 md:p-6">
         {chartData.length > 0 ? (
-          <div className="h-64">
+          <div className="h-64 w-full overflow-x-auto">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />

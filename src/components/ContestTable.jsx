@@ -48,20 +48,18 @@ const ContestTable = ({ contests = [], title = 'Recent Contests', platform = '',
   });
 
   return (
-    <div className={`card ${className}`}>
-      <div className="card-header flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-          {title}
-        </h3>
-        <span className="ml-4 inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200">
+    <div className={`card ${className} w-full`}>
+      <div className="card-header flex items-center justify-between min-w-0 w-full">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate">{title}</h3>
+        <span className="ml-4 inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200 truncate">
           Contests Given: {contests.length}
         </span>
       </div>
-      <div className="card-body">
+      <div className="card-body min-w-0 w-full">
         {contestsWithDelta.length > 0 ? (
-          <div className="overflow-x-auto">
-            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="overflow-x-auto w-full min-w-0">
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="min-w-0 w-full">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-xs sm:text-sm min-w-0 w-full">
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -84,7 +82,7 @@ const ContestTable = ({ contests = [], title = 'Recent Contests', platform = '',
                 <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                   {contestsWithDelta.map((contest, index) => (
                     <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal break-words max-w-[120px] sm:max-w-none truncate">
                         <div className="flex items-center">
                           <Trophy className="w-4 h-4 text-yellow-500 mr-2" />
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
@@ -92,23 +90,23 @@ const ContestTable = ({ contests = [], title = 'Recent Contests', platform = '',
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal break-words max-w-[120px] sm:max-w-none truncate">
                         <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <Calendar className="w-4 h-4 mr-1" />
                           {formatDate(contest.date)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal break-words max-w-[120px] sm:max-w-none truncate">
                         <span className={`text-sm font-medium ${getRankColor(contest.rank, contest.participants)}`}>
                           {typeof contest.rank === 'number' && contest.rank !== 0 ? `#${contest.rank.toLocaleString()}` : '-'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal break-words max-w-[120px] sm:max-w-none truncate">
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {contest.rating !== null ? contest.rating : '-'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-normal break-words max-w-[120px] sm:max-w-none truncate">
                         <span className={`text-sm font-medium ${getDeltaColor(contest.delta)}`}>
                           {contest.delta}
                         </span>

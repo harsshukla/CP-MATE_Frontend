@@ -98,9 +98,9 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-4 md:px-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Welcome back, {user?.username}!
@@ -120,7 +120,7 @@ const Dashboard = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         <StatsCard
           title="Total Solved"
           value={totalSolved}
@@ -142,12 +142,14 @@ const Dashboard = () => {
       </div>
 
       {/* Heatmap */}
-      <ActivityHeatmap data={mergedActivity} />
+      <div className="overflow-x-auto w-full">
+        <ActivityHeatmap data={mergedActivity} />
+      </div>
 
       {/* LeetCode Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start min-h-[420px]">
-        <div className="space-y-6 w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start min-h-[420px]">
+        <div className="space-y-4 sm:space-y-6 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 w-full">
             <StatsCard
               title="LeetCode Solved"
               value={leetcodeSolved}
@@ -165,7 +167,7 @@ const Dashboard = () => {
               className="py-2 px-3 text-base w-full"
             />
           </div>
-          <div className="w-full" style={{ minWidth: 0 }}>
+          <div className="w-full overflow-x-auto">
             <RatingGraph
               data={(() => {
                 const history = (lcContestData?.userContestRankingHistory || [])
@@ -185,7 +187,7 @@ const Dashboard = () => {
             />
           </div>
         </div>
-        <div className="flex flex-col h-full justify-stretch min-h-[420px]">
+        <div className="flex flex-col h-full justify-stretch min-h-[420px] w-full overflow-x-auto">
           <ContestTable
             contests={(() => {
               const participated = (lcContestData?.userContestRankingHistory || [])

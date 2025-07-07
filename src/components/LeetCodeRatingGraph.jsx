@@ -52,12 +52,12 @@ const LeetCodeRatingGraph = ({ timeline = [] }) => {
   const connectNulls = false; // Don't connect skipped contests
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white">LeetCode Rating Timeline</h3>
+    <div className="card w-full">
+      <div className="card-header p-3 sm:p-4 md:p-6">
+        <h3 className="text-lg sm:text-xl font-medium text-gray-900 dark:text-white">LeetCode Rating Timeline</h3>
       </div>
-      <div className="card-body">
-        <div className="h-64">
+      <div className="card-body p-3 sm:p-4 md:p-6">
+        <div className="h-64 w-full overflow-x-auto">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />

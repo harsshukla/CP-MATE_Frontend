@@ -77,7 +77,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-4 md:px-0">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Profile</h1>
@@ -120,7 +120,7 @@ const Profile = () => {
         </div>
         <div className="card-body">
           <form onSubmit={handleHandlesSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   LeetCode Handle
@@ -150,11 +150,11 @@ const Profile = () => {
               </div>
             </div>
 
-            <div className="flex justify-end">
+            <div className="flex flex-col sm:flex-row justify-end gap-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="btn-primary"
+                className="btn-primary w-full sm:w-auto"
               >
                 {loading ? 'Updating...' : 'Update Handles'}
               </button>
