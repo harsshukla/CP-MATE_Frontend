@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import Calendar from 'react-calendar'
-import 'react-calendar/dist/Calendar.css'
 import api from '../services/api'
+
+const PLATFORM_ICONS = {
+  Codeforces: '🏆',
+  LeetCode: '🟧',
+  AtCoder: '🇯🇵',
+  // Add more as needed
+}
 
 const getMonthRange = (date) => {
   const start = new Date(date.getFullYear(), date.getMonth(), 1)
@@ -9,37 +14,48 @@ const getMonthRange = (date) => {
   return { start, end }
 }
 
-const getContestUrl = (contest) => {
-  if (contest.platform === 'Codeforces') {
-    return `https://codeforces.com/contest/${contest.id}`
+function getMonthMatrix(year, month) {
+  // month: 0-based
+  const firstDay = new Date(year, month, 1)
+  const lastDay = new Date(year, month + 1, 0)
+  const firstWeekday = (firstDay.getDay() + 6) % 7 // 0=Monday, 6=Sunday
+  const daysInMonth = lastDay.getDate()
+  const matrix = []
+  let week = Array(firstWeekday).fill(null)
+  for (let d = 1; d <= daysInMonth; d++) {
+    week.push(d)
+    if (week.length === 7) {
+      matrix.push(week)
+      week = []
+    }
   }
-  if (contest.platform === 'LeetCode') {
-    return `https://leetcode.com/contest/${contest.id}`
+  if (week.length) {
+    while (week.length < 7) week.push(null)
+    matrix.push(week)
   }
-  return '#'
+  return matrix
 }
 
 const UpcomingContests = () => {
   const [contests, setContests] = useState([])
-  const [selectedDate, setSelectedDate] = useState(new Date())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = today.getMonth()
+  const monthMatrix = getMonthMatrix(year, month)
 
   useEffect(() => {
     const fetchContests = async () => {
       setLoading(true)
       setError(null)
       try {
-        // Fetch merged upcoming contests from backend
         const res = await api.get('/contests/upcoming')
-        const { start, end } = getMonthRange(new Date())
-        // Only show contests in the current month
-        const monthContests = (res.data || []).filter(
-          c => {
-            const t = new Date(c.start)
-            return t >= start && t <= end
-          }
-        )
+        const { start, end } = getMonthRange(today)
+        const monthContests = (res.data || []).filter(c => {
+          const t = new Date(c.start)
+          return t >= start && t <= end
+        })
         setContests(monthContests)
         if (monthContests.length === 0) {
           setError('No upcoming contests this month.')
@@ -51,83 +67,111 @@ const UpcomingContests = () => {
       }
     }
     fetchContests()
+    // eslint-disable-next-line
   }, [])
 
-  // Get contest dates for the current month
-  const contestDates = contests.map(c => c.start.toISOString().split('T')[0])
-
-  // Get contests for selected date
-  const contestsOnDate = contests.filter(
-    c => c.start.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0]
-  )
-
-  // Tile content for calendar
-  const tileContent = ({ date, view }) => {
-    if (view === 'month') {
-      const dateStr = date.toISOString().split('T')[0]
-      if (contestDates.includes(dateStr)) {
-        return (
-          <button
-            type="button"
-            className="w-2 h-2 mx-auto mt-1 rounded-full bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-400"
-            tabIndex={-1}
-            aria-label="View contests"
-            onClick={e => {
-              e.stopPropagation()
-              setSelectedDate(date)
-            }}
-          ></button>
-        )
+  // Group contests by date string (YYYY-MM-DD)
+  const contestsByDate = {}
+  contests.forEach(c => {
+    const dateObj = new Date(c.start)
+    // Always use UTC date from API for mapping
+    const dateStr = dateObj.toISOString().split('T')[0]
+    if (!contestsByDate[dateStr]) contestsByDate[dateStr] = []
+    // For badge, set display time as before
+    let displayTimeIST = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' })
+    if (c.platform === 'LeetCode') {
+      if (/Biweekly/i.test(c.name)) {
+        displayTimeIST = '20:00' // Always show 8:00 PM IST for Biweekly
+      } else if (/Weekly/i.test(c.name)) {
+        displayTimeIST = '08:00' // Always show 8:00 AM IST for Weekly
+      }
+    } else if (c.platform === 'Codeforces') {
+      // Try to extract division info
+      const divMatch = c.name.match(/Div\.? ?(\d+)/i)
+      if (divMatch) {
+        displayTimeIST = `CF Div-${divMatch[1]}`
+      } else {
+        displayTimeIST = 'CF'
       }
     }
-    return null
-  }
+    contestsByDate[dateStr].push({ ...c, displayTimeIST })
+  })
+
+  // Render
+  const monthName = today.toLocaleString('default', { month: 'long' })
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Upcoming Contests</h1>
-      <div className="card">
-        <div className="card-header">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Current Month</h3>
-        </div>
-        <div className="card-body flex flex-col items-center">
-          <Calendar
-            value={selectedDate}
-            onChange={setSelectedDate}
-            tileContent={tileContent}
-            minDetail="month"
-            maxDetail="month"
-            showNeighboringMonth={false}
-          />
-          <div className="mt-6 w-full">
-            <h4 className="text-md font-semibold mb-2 text-gray-800 dark:text-gray-200">Contests on {selectedDate.toLocaleDateString()}</h4>
-            {loading ? (
-              <p>Loading...</p>
-            ) : error ? (
-              <p className={error.includes('No upcoming') ? 'text-gray-500' : 'text-red-600'}>{error}</p>
-            ) : contestsOnDate.length === 0 ? (
-              <p className="text-gray-500">No contests on this day.</p>
-            ) : (
-              <ul className="space-y-2">
-                {contestsOnDate.map(contest => (
-                  <li key={contest.id} className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 flex flex-col md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <div className="font-medium text-green-700 dark:text-green-400">{contest.name}</div>
-                      <div className="text-xs text-gray-500">{contest.platform} &bull; {contest.start.toLocaleTimeString()} &bull; {contest.duration.toFixed(1)} hrs</div>
-                    </div>
-                    <a
-                      href={getContestUrl(contest)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-primary mt-2 md:mt-0 md:ml-4 px-3 py-1 text-sm"
-                    >
-                      Go to Contest
-                    </a>
-                  </li>
+    <div className="w-full min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center py-8">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Upcoming Contests</h1>
+      <div className="w-full flex justify-center">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-6xl">
+          <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center">{monthName} {year}</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full border-separate border-spacing-2">
+              <thead>
+                <tr>
+                  {weekDays.map(day => (
+                    <th key={day} className="text-lg font-bold text-center text-gray-700 dark:text-gray-200">{day}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {monthMatrix.map((week, i) => (
+                  <tr key={i}>
+                    {week.map((d, j) => {
+                      let cellDate = null
+                      let cellDateObj = null
+                      if (d) {
+                        // Always use UTC for cell date
+                        cellDateObj = new Date(Date.UTC(year, month, d))
+                        cellDate = cellDateObj.toISOString().split('T')[0]
+                      }
+                      const isToday = d && today.getUTCDate() === d && today.getUTCMonth() === month && today.getUTCFullYear() === year
+                      return (
+                        <td
+                          key={j}
+                          className={`align-top bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-2 w-[150px] h-[150px] ${isToday ? 'ring-4 ring-blue-400' : ''}`}
+                          style={{ minWidth: 150, width: 150, minHeight: 150, verticalAlign: 'top' }}
+                        >
+                          <div className="text-base font-semibold text-gray-800 dark:text-gray-100 mb-1 text-left">
+                            {d || ''}
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            {cellDate && contestsByDate[cellDate] && contestsByDate[cellDate].map((contest, idx) => {
+                              let badgeText = contest.name
+                              if (contest.platform === 'LeetCode') {
+                                if (/Biweekly/i.test(contest.name)) {
+                                  badgeText = 'LC Biweekly'
+                                } else if (/Weekly/i.test(contest.name)) {
+                                  badgeText = 'LC Weekly'
+                                }
+                              } else if (contest.platform === 'Codeforces') {
+                                // Try to extract division info
+                                const divMatch = contest.name.match(/Div\.? ?(\d+)/i)
+                                if (divMatch) {
+                                  badgeText = `CF Div-${divMatch[1]}`
+                                } else {
+                                  badgeText = 'CF'
+                                }
+                              }
+                              return (
+                                <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                  <span className="mr-1">{PLATFORM_ICONS[contest.platform] || '🎯'}</span>{badgeText}
+                                </span>
+                              )
+                            })}
+                          </div>
+                        </td>
+                      )
+                    })}
+                  </tr>
                 ))}
-              </ul>
-            )}
+              </tbody>
+            </table>
           </div>
+          {loading && <p>Loading...</p>}
+          {error && <p className={error.includes('No upcoming') ? 'text-gray-500' : 'text-red-600'}>{error}</p>}
         </div>
       </div>
     </div>

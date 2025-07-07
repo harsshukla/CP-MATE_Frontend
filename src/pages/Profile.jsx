@@ -65,6 +65,7 @@ const Profile = () => {
       const response = await userAPI.updateHandles(handlesForm)
       updateUser({ ...user, handles: response.data.handles })
       setMessage({ type: 'success', text: 'Handles updated successfully! You can now refresh your stats.' })
+      window.dispatchEvent(new Event('handlesUpdated'))
     } catch (error) {
       setMessage({ 
         type: 'error', 

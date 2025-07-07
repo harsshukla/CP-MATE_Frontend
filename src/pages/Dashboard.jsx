@@ -33,25 +33,32 @@ const Dashboard = () => {
     fetchLeetCodeContest()
   }, [user?.handles?.leetcode])
 
+  useEffect(() => {
+    const handler = () => {
+      refreshStats();
+    };
+    window.addEventListener('handlesUpdated', handler);
+    return () => window.removeEventListener('handlesUpdated', handler);
+  }, [refreshStats]);
+
   const getPlatformStats = (platform) =>
     stats?.find((s) => s.platform === platform) || {}
 
   const leetcodeStats = getPlatformStats('leetcode')
   const codeforcesStats = getPlatformStats('codeforces')
 
-  const mergedActivity = [
-    ...(leetcodeStats?.activity?.dailyActivity || []),
-    ...(codeforcesStats?.activity?.dailyActivity || [])
-  ].reduce((acc, curr) => {
-    const dateStr = new Date(curr.date).toISOString().split('T')[0]
-    if (!acc[dateStr]) {
-      acc[dateStr] = { date: curr.date, problemsSolved: 0, submissions: 0 }
-    }
-    acc[dateStr].problemsSolved += curr.problemsSolved || 0
-    acc[dateStr].submissions += curr.submissions || 0
-    return acc
-  }, {})
-  const heatmapData = Object.values(mergedActivity)
+  // Build merged activity with platform info for each day
+  const leetActivity = (leetcodeStats?.activity?.dailyActivity || []).map(item => ({
+    ...item,
+    platform: 'LeetCode',
+    submissions: item.submissions || 0
+  }));
+  const cfActivity = (codeforcesStats?.activity?.dailyActivity || []).map(item => ({
+    ...item,
+    platform: 'Codeforces',
+    submissions: item.submissions || 0
+  }));
+  const mergedActivity = [...leetActivity, ...cfActivity];
 
   const leetcodeSolved =
     (leetcodeStats?.problems?.byDifficulty?.easy || 0) +
@@ -59,7 +66,36 @@ const Dashboard = () => {
     (leetcodeStats?.problems?.byDifficulty?.hard || 0)
   const codeforcesSolved = codeforcesStats?.problems?.solved || 0
   const totalSolved = leetcodeSolved + codeforcesSolved
-  const streak = heatmapData.length > 0 ? Math.max(...heatmapData.map(d => d.problemsSolved > 0 ? 1 : 0)) : 0
+
+  // Build a map of all activity by date string
+  const activityMap = {};
+  mergedActivity.forEach(d => {
+    const dateStr = new Date(d.date).toISOString().split('T')[0];
+    activityMap[dateStr] = (activityMap[dateStr] || 0) + (d.problemsSolved || 0);
+  });
+  // Get the full range of dates for the heatmap (last 12 months)
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setMonth(endDate.getMonth() - 11);
+  startDate.setDate(1);
+  let maxStreak = 0;
+  let currentStreak = 0;
+  let tempStreak = 0;
+  let streak = 0;
+  const todayStr = new Date().toISOString().split('T')[0];
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().split('T')[0];
+    if (activityMap[dateStr] > 0) {
+      tempStreak++;
+      if (dateStr === todayStr) {
+        streak = tempStreak; // current streak ends today
+      }
+      if (tempStreak > maxStreak) maxStreak = tempStreak;
+    } else {
+      tempStreak = 0;
+      if (dateStr === todayStr) streak = 0;
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -84,7 +120,7 @@ const Dashboard = () => {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
         <StatsCard
           title="Total Solved"
           value={totalSolved}
@@ -92,15 +128,21 @@ const Dashboard = () => {
           color="primary"
         />
         <StatsCard
-          title="Streak"
+          title="Current Streak"
           value={streak}
           icon={Flame}
           color="danger"
         />
+        <StatsCard
+          title="Max Streak"
+          value={maxStreak}
+          icon={Flame}
+          color="warning"
+        />
       </div>
 
       {/* Heatmap */}
-      <ActivityHeatmap data={heatmapData} />
+      <ActivityHeatmap data={mergedActivity} />
 
       {/* LeetCode Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start min-h-[420px]">
