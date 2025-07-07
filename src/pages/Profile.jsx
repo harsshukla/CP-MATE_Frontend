@@ -2,11 +2,17 @@ import React, { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { userAPI } from '../services/api'
 import { CheckCircle, AlertCircle } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const Profile = () => {
   const { user, updateUser } = useAuth()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState('')
   
   // Form states
   const [profileForm, setProfileForm] = useState({
@@ -42,14 +48,22 @@ const Profile = () => {
     setLoading(true)
     setMessage({ type: '', text: '' })
 
+    // Only send non-empty fields
+    const dataToSend = {}
+    if (profileForm.name) dataToSend.name = profileForm.name
+    if (profileForm.bio) dataToSend.bio = profileForm.bio
+    if (profileForm.location) dataToSend.location = profileForm.location
+    if (profileForm.website) dataToSend.website = profileForm.website
+
     try {
-      const response = await userAPI.updateProfile(profileForm)
+      const response = await userAPI.updateProfile(dataToSend)
       updateUser({ ...user, profile: response.data.profile })
       setMessage({ type: 'success', text: 'Profile updated successfully!' })
     } catch (error) {
       setMessage({ 
         type: 'error', 
-        text: error.response?.data?.error || 'Failed to update profile' 
+        text: error.response?.data?.error ||
+          (error.response?.data?.errors?.[0]?.msg || 'Failed to update profile')
       })
     } finally {
       setLoading(false)
@@ -73,6 +87,25 @@ const Profile = () => {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    setDeleteError('')
+    if (!deletePassword) {
+      setDeleteError('Password is required to delete your account.')
+      return;
+    }
+    setDeleting(true)
+    try {
+      await userAPI.deleteAccount(deletePassword)
+      localStorage.removeItem('token')
+      setDeleting(false)
+      setDeleteDialogOpen(false)
+      navigate('/login')
+    } catch (error) {
+      setDeleting(false)
+      setDeleteError(error.response?.data?.error || 'Failed to delete account')
     }
   }
 
@@ -272,17 +305,6 @@ const Profile = () => {
         </div>
         <div className="card-body">
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Theme
-              </label>
-              <select className="input">
-                <option value="auto">Auto (System)</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
-            </div>
-
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Notifications</p>
@@ -292,7 +314,6 @@ const Profile = () => {
                 <span className="inline-block h-4 w-4 transform rounded-full bg-white transition"></span>
               </button>
             </div>
-
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Push Notifications</p>
@@ -303,7 +324,6 @@ const Profile = () => {
               </button>
             </div>
           </div>
-
           <div className="mt-6 flex justify-end">
             <button className="btn-primary">
               Save Preferences
@@ -325,12 +345,37 @@ const Profile = () => {
                 Permanently delete your account and all associated data
               </p>
             </div>
-            <button className="btn-danger">
-              Delete Account
+            <button className="btn-danger" onClick={() => setDeleteDialogOpen(true)} disabled={deleting}>
+              {deleting ? 'Deleting...' : 'Delete Account'}
             </button>
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 max-w-sm w-full">
+            <h2 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Confirm Account Deletion</h2>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">Are you sure you want to permanently delete your account? This action cannot be undone.</p>
+            <input
+              type="password"
+              className="input mb-2"
+              placeholder="Enter your password"
+              value={deletePassword}
+              onChange={e => setDeletePassword(e.target.value)}
+              disabled={deleting}
+            />
+            {deleteError && <p className="text-sm text-red-600 mb-2">{deleteError}</p>}
+            <div className="flex justify-end gap-2">
+              <button className="btn" onClick={() => { setDeleteDialogOpen(false); setDeletePassword(''); setDeleteError(''); }} disabled={deleting}>Cancel</button>
+              <button className="btn-danger" onClick={handleDeleteAccount} disabled={deleting}>
+                {deleting ? 'Deleting...' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

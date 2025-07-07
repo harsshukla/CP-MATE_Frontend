@@ -103,7 +103,7 @@ const Dashboard = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Welcome back, {user?.username}!
+            Welcome back, {user?.profile?.name ? user.profile.name : user?.username}!
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Track your competitive programming progress
