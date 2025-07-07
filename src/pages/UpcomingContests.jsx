@@ -40,6 +40,7 @@ const UpcomingContests = () => {
   const [contests, setContests] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [modalContest, setModalContest] = useState(null)
   const today = new Date()
   const year = today.getFullYear()
   const month = today.getMonth()
@@ -52,9 +53,10 @@ const UpcomingContests = () => {
       try {
         const res = await api.get('/contests/upcoming')
         const { start, end } = getMonthRange(today)
+        // Only show LeetCode and Codeforces
         const monthContests = (res.data || []).filter(c => {
           const t = new Date(c.start)
-          return t >= start && t <= end
+          return t >= start && t <= end && (c.platform === 'LeetCode' || c.platform === 'Codeforces')
         })
         setContests(monthContests)
         if (monthContests.length === 0) {
@@ -70,7 +72,6 @@ const UpcomingContests = () => {
     // eslint-disable-next-line
   }, [])
 
-  // Group contests by date string (YYYY-MM-DD)
   const contestsByDate = {}
   contests.forEach(c => {
     const dateObj = new Date(c.start)
@@ -81,9 +82,9 @@ const UpcomingContests = () => {
     let displayTimeIST = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' })
     if (c.platform === 'LeetCode') {
       if (/Biweekly/i.test(c.name)) {
-        displayTimeIST = '20:00' // Always show 8:00 PM IST for Biweekly
+        displayTimeIST = '20:00' 
       } else if (/Weekly/i.test(c.name)) {
-        displayTimeIST = '08:00' // Always show 8:00 AM IST for Weekly
+        displayTimeIST = '08:00' 
       }
     } else if (c.platform === 'Codeforces') {
       // Try to extract division info
@@ -156,9 +157,40 @@ const UpcomingContests = () => {
                                 }
                               }
                               return (
-                                <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                <button
+                                  key={idx}
+                                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 focus:outline-none"
+                                  onClick={() => {
+                                    if (contest.platform === 'LeetCode') {
+                                      console.log('contest.titleSlug:', contest.titleSlug);
+                                      console.log('contest object:', contest);
+                                    }
+                                    if (contest.platform === 'LeetCode') {
+                                      console.log('LeetCode Contest Object:', contest);
+                                      let match;
+                                      if (/weekly/i.test(contest.name)) {
+                                        match = contest.name.match(/(\d+)/);
+                                        console.log('Weekly regex match:', match);
+                                        if (match) {
+                                          console.log('LeetCode Weekly Contest Number:', match[1]);
+                                        } else {
+                                          console.warn('No number found in LeetCode Weekly contest name:', contest.name);
+                                        }
+                                      } else if (/biweekly/i.test(contest.name)) {
+                                        match = contest.name.match(/(\d+)/);
+                                        console.log('Biweekly regex match:', match);
+                                        if (match) {
+                                          console.log('LeetCode Biweekly Contest Number:', match[1]);
+                                        } else {
+                                          console.warn('No number found in LeetCode Biweekly contest name:', contest.name);
+                                        }
+                                      }
+                                    }
+                                    setModalContest(contest);
+                                  }}
+                                >
                                   <span className="mr-1">{PLATFORM_ICONS[contest.platform] || '🎯'}</span>{badgeText}
-                                </span>
+                                </button>
                               )
                             })}
                           </div>
@@ -174,6 +206,66 @@ const UpcomingContests = () => {
           {error && <p className={error.includes('No upcoming') ? 'text-gray-500' : 'text-red-600'}>{error}</p>}
         </div>
       </div>
+      {/* Modal for contest details */}
+      {modalContest && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 min-w-[320px] max-w-[90vw]">
+            <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{
+              modalContest.platform === 'LeetCode' && modalContest.title
+                ? modalContest.title
+                : modalContest.name || 'Contest'
+            }</h2>
+            <div className="mb-2 text-gray-700 dark:text-gray-200">
+              <div><b>Date:</b> {(() => {
+                let dateObj;
+                if (modalContest.platform === 'LeetCode' && modalContest.startTime) {
+                  dateObj = new Date(modalContest.startTime * 1000);
+                } else {
+                  dateObj = new Date(modalContest.start);
+                }
+                return dateObj.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+              })()}</div>
+              <div>
+                <b>Time:</b> {(() => {
+                  let startDate, endDate;
+                  if (modalContest.platform === 'LeetCode' && modalContest.startTime) {
+                    startDate = new Date(modalContest.startTime * 1000);
+                    endDate = new Date(startDate.getTime() + (modalContest.duration ? modalContest.duration * 60 * 60 * 1000 : 0));
+                  } else {
+                    startDate = new Date(modalContest.start);
+                    endDate = new Date(startDate.getTime() + (modalContest.duration ? modalContest.duration * 60 * 60 * 1000 : 0));
+                  }
+                  const startStr = startDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
+                  const endStr = endDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false });
+                  return `${startStr} - ${endStr}`;
+                })()}
+              </div>
+              <div><b>Platform:</b> {modalContest.platform}</div>
+            </div>
+            {/* LeetCode: use titleSlug for contest link if available */}
+            {modalContest.platform === 'LeetCode' ? (
+              <a
+                href={modalContest.titleSlug ? `https://leetcode.com/contest/${modalContest.titleSlug}/` : 'https://leetcode.com/contest/'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary inline-block px-4 py-2 mt-2"
+              >
+                Go to Contest
+              </a>
+            ) : (
+              <a
+                href={modalContest.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary inline-block px-4 py-2 mt-2"
+              >
+                Go to Contest
+              </a>
+            )}
+            <button onClick={() => setModalContest(null)} className="ml-4 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white">Close</button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
