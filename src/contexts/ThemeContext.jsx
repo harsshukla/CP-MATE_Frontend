@@ -11,37 +11,19 @@ export const useTheme = () => {
 }
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('auto')
+  const [theme, setTheme] = useState('light')
 
-  // Initialize theme from localStorage or system preference
+  // Initialize theme from localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme')
     if (savedTheme) {
       setTheme(savedTheme)
-    } else {
-      // Check system preference
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-      setTheme('auto')
     }
   }, [])
 
-  // Listen for system theme changes
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    
-    const handleChange = () => {
-      if (theme === 'auto') {
-        // Theme will be applied in App.jsx useEffect
-        setTheme('auto')
-      }
-    }
-
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [theme])
-
+  // Only toggle between light and dark
   const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'auto' : 'light'
+    const newTheme = theme === 'light' ? 'dark' : 'light'
     setTheme(newTheme)
     localStorage.setItem('theme', newTheme)
   }
@@ -51,12 +33,7 @@ export const ThemeProvider = ({ children }) => {
     localStorage.setItem('theme', mode)
   }
 
-  const getCurrentTheme = () => {
-    if (theme === 'auto') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    }
-    return theme
-  }
+  const getCurrentTheme = () => theme
 
   const value = {
     theme,

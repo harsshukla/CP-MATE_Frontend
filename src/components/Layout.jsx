@@ -34,7 +34,7 @@ const Layout = () => {
   const getThemeIcon = () => {
     if (theme === 'light') return Sun
     if (theme === 'dark') return Moon
-    return Monitor
+    return Sun // fallback, but only light/dark will be used
   }
 
   const ThemeIcon = getThemeIcon()
@@ -50,61 +50,68 @@ const Layout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col md:flex-row min-w-0 overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-black flex flex-col md:flex-row min-w-0 overflow-x-hidden">
       {/* Sidebar (desktop/tablet) */}
-      <div className="hidden md:block min-w-0">
+      <div className="hidden md:block">
         <div
-          className={`fixed z-50 top-0 left-0 h-full ${sidebarCollapsed ? 'w-16' : 'w-64'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-200 md:static md:block min-w-0`}
+          className={`fixed z-50 top-0 left-0 h-screen ${sidebarCollapsed ? 'w-16' : 'w-64'} bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-200`}
+          onClick={() => {
+            if (sidebarCollapsed) setSidebarCollapsed(false);
+          }}
+          style={{ cursor: sidebarCollapsed ? 'pointer' : 'default' }}
         >
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full justify-between">
             {/* Logo and collapse button */}
-            <div className="flex items-center h-16 px-2 sm:px-4 border-b border-gray-200 dark:border-gray-700 justify-between">
-              <Link to="/dashboard" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-                  <Trophy className="w-5 h-5 text-white" />
-                </div>
-                {!sidebarCollapsed && (
-                  <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">CP Mate</span>
-                )}
-              </Link>
-              {/* Collapse/Expand button only on md+ */}
-              <button
-                className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors md:inline-block hidden"
-                onClick={() => setSidebarCollapsed((c) => !c)}
-                title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                tabIndex={window.innerWidth >= 768 ? 0 : -1}
-                aria-hidden={window.innerWidth < 768}
-              >
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  {sidebarCollapsed ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <div>
+              <div className="flex items-center h-16 px-2 sm:px-4 border-b border-gray-200 dark:border-gray-700 justify-between">
+                <Link to="/dashboard" className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
+                    <Trophy className="w-5 h-5 text-white" />
+                  </div>
+                  {!sidebarCollapsed && (
+                    <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">CP Mate</span>
                   )}
-                </svg>
-              </button>
-            </div>
-            {/* Navigation */}
-            <nav className="flex-1 px-1 sm:px-2 py-4 sm:py-6 space-y-2">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`flex items-center ${sidebarCollapsed ? 'justify-center' : ''} space-x-3 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors min-w-0 ${
-                      isActive
-                        ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
-                        : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                    }`}
-                    onClick={() => setSidebarOpen(false)}
+                </Link>
+                {/* Collapse/Expand button only on md+ and only show when not collapsed */}
+                {!sidebarCollapsed && (
+                  <button
+                    className="ml-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors md:inline-block hidden"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSidebarCollapsed(true);
+                    }}
+                    title="Collapse sidebar"
+                    tabIndex={window.innerWidth >= 768 ? 0 : -1}
+                    aria-hidden={window.innerWidth < 768}
                   >
-                    <item.icon className="w-5 h-5 flex-shrink-0" />
-                    {!sidebarCollapsed && <span className="truncate">{item.name}</span>}
-                  </Link>
-                )
-              })}
-            </nav>
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              {/* Navigation */}
+              <nav className="flex-1 px-1 sm:px-2 py-4 sm:py-6 space-y-2">
+                {navigation.map((item) => {
+                  const isActive = location.pathname === item.href
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`flex items-center ${sidebarCollapsed ? 'justify-center' : ''} space-x-3 px-2 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors min-w-0 ${
+                        isActive
+                          ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300'
+                          : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                      }`}
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                      {!sidebarCollapsed && <span className="truncate">{item.name}</span>}
+                    </Link>
+                  )
+                })}
+              </nav>
+            </div>
             {/* User section */}
             <div className={`p-2 sm:p-4 border-t border-gray-200 dark:border-gray-700 ${sidebarCollapsed ? 'px-2' : ''}`}>
               <div className={`flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
@@ -241,7 +248,7 @@ const Layout = () => {
         </button>
       </div>
       {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0 w-full px-2 sm:px-4 md:px-8 py-4 md:py-8">
+      <div className={`flex-1 flex flex-col min-w-0 w-full px-2 sm:px-4 md:px-8 py-4 md:py-8 transition-all duration-200 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
         <Outlet />
       </div>
     </div>
