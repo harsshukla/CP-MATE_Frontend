@@ -35,6 +35,10 @@ const Login = () => {
     setLoading(false)
   }
 
+  const handleGoogleLogin = () => {
+    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/google`;
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-8 px-2 sm:py-12 sm:px-4 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -127,6 +131,14 @@ const Login = () => {
               ) : (
                 'Sign in'
               )}
+            </button>
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="btn w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 mt-4 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="w-5 h-5" />
+              Sign in with Google
             </button>
           </div>
 

@@ -41,6 +41,7 @@ const UpcomingContests = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [modalContest, setModalContest] = useState(null)
+  const [apiStatus, setApiStatus] = useState({ leetcode: 'unknown' })
   const today = new Date()
   const year = today.getFullYear()
   const month = today.getMonth()
@@ -52,17 +53,30 @@ const UpcomingContests = () => {
       setError(null)
       try {
         const res = await api.get('/contests/upcoming')
-        const { start, end } = getMonthRange(today)
-        // Only show LeetCode and Codeforces
-        const monthContests = (res.data || []).filter(c => {
-          const t = new Date(c.start)
-          return t >= start && t <= end && (c.platform === 'LeetCode' || c.platform === 'Codeforces')
+        
+        // Handle new response format
+        const contestData = res.data.contests || res.data || []
+        setApiStatus({
+          leetcode: res.data.leetcodeApiStatus || 'unknown'
         })
+        
+        // Filter contests for current month (should already be filtered by backend, but double-check)
+        const { start, end } = getMonthRange(today)
+        const monthContests = contestData.filter(c => {
+          const contestDate = new Date(c.start)
+          return contestDate >= start && contestDate <= end && (c.platform === 'LeetCode' || c.platform === 'Codeforces')
+        })
+        
         setContests(monthContests)
+        
         if (monthContests.length === 0) {
-          setError('No upcoming contests this month.')
+          setError('No contests found for this month.')
         }
+        
+        console.log(`Loaded ${monthContests.length} contests for the month`)
+        
       } catch (err) {
+        console.error('Error fetching contests:', err)
         setError('Unable to fetch contest data. Please try again later.')
       } finally {
         setLoading(false)
@@ -72,14 +86,44 @@ const UpcomingContests = () => {
     // eslint-disable-next-line
   }, [])
 
+  // Refetch contests handler
+  const handleRefresh = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await api.get('/contests/upcoming')
+      const contestData = res.data.contests || res.data || []
+      setApiStatus({
+        leetcode: res.data.leetcodeApiStatus || 'unknown'
+      })
+      const { start, end } = getMonthRange(today)
+      const monthContests = contestData.filter(c => {
+        const contestDate = new Date(c.start)
+        return contestDate >= start && contestDate <= end && (c.platform === 'LeetCode' || c.platform === 'Codeforces')
+      })
+      setContests(monthContests)
+      if (monthContests.length === 0) {
+        setError('No contests found for this month.')
+      }
+      console.log(`Refreshed: loaded ${monthContests.length} contests for the month`)
+    } catch (err) {
+      console.error('Error refreshing contests:', err)
+      setError('Unable to fetch contest data. Please try again later.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const contestsByDate = {}
   contests.forEach(c => {
     const dateObj = new Date(c.start)
     // Always use UTC date from API for mapping
     const dateStr = dateObj.toISOString().split('T')[0]
     if (!contestsByDate[dateStr]) contestsByDate[dateStr] = []
+    
     // For badge, set display time as before
     let displayTimeIST = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' })
+    
     if (c.platform === 'LeetCode') {
       if (/Biweekly/i.test(c.name)) {
         displayTimeIST = '20:00' 
@@ -95,7 +139,13 @@ const UpcomingContests = () => {
         displayTimeIST = 'CF'
       }
     }
-    contestsByDate[dateStr].push({ ...c, displayTimeIST })
+    
+    contestsByDate[dateStr].push({ 
+      ...c, 
+      displayTimeIST,
+      isPast: new Date(c.start) < new Date(),
+      phase: c.phase || (new Date(c.start) < new Date() ? 'FINISHED' : 'BEFORE')
+    })
   })
 
   // Render
@@ -104,7 +154,47 @@ const UpcomingContests = () => {
 
   return (
     <div className="w-full min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center py-4 sm:py-8 px-2 sm:px-4">
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-8">Upcoming Contests</h1>
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-8">Contest Calendar</h1>
+      <div className="w-full max-w-6xl flex justify-end mb-2">
+        <button
+          onClick={handleRefresh}
+          className="inline-flex items-center px-3 py-1.5 rounded bg-blue-600 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm disabled:opacity-60"
+          disabled={loading}
+        >
+          {loading ? (
+            <span className="inline-block mr-2 animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+          ) : (
+            <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582M20 20v-5h-.581M5.635 19A9 9 0 1 1 19 5.635" /></svg>
+          )}
+          Refresh Contests
+        </button>
+      </div>
+      
+      {/* API Status Warning */}
+      {apiStatus.leetcode === 'fallback' && (
+        <div className="w-full max-w-6xl mb-4">
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                  LeetCode API Unavailable
+                </h3>
+                <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-300">
+                  <p>
+                    Using fallback contest schedule. Some contests may be missing or inaccurate.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="w-full flex justify-center">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 sm:p-6 w-full max-w-6xl overflow-x-auto">
           <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6 text-center">{monthName} {year}</h3>
@@ -156,10 +246,17 @@ const UpcomingContests = () => {
                                   badgeText = 'CF'
                                 }
                               }
+                              
+                              // Determine badge color based on contest status
+                              const isPast = contest.isPast || contest.phase === 'FINISHED'
+                              const badgeColorClass = isPast 
+                                ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300' 
+                                : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200'
+                              
                               return (
                                 <button
                                   key={idx}
-                                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 focus:outline-none break-words max-w-full"
+                                  className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${badgeColorClass} focus:outline-none break-words max-w-full`}
                                   onClick={() => {
                                     if (contest.platform === 'LeetCode') {
                                       console.log('contest.titleSlug:', contest.titleSlug);
@@ -202,8 +299,33 @@ const UpcomingContests = () => {
               </tbody>
             </table>
           </div>
-          {loading && <p>Loading...</p>}
-          {error && <p className={error.includes('No upcoming') ? 'text-gray-500' : 'text-red-600'}>{error}</p>}
+          
+          {/* Legend */}
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-green-100 dark:bg-green-900 rounded"></div>
+              <span>Upcoming</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-gray-100 dark:bg-gray-700 rounded"></div>
+              <span>Past</span>
+            </div>
+          </div>
+          
+          {/* Loading and Error States */}
+          {loading && (
+            <div className="mt-4 text-center">
+              <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">Loading contests...</p>
+            </div>
+          )}
+          {error && (
+            <div className="mt-4 text-center">
+              <p className={error.includes('No contests found') ? 'text-gray-500 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}>
+                {error}
+              </p>
+            </div>
+          )}
         </div>
       </div>
       {/* Modal for contest details */}

@@ -144,14 +144,14 @@ const Profile = () => {
       )}
 
       {/* Platform Handles */}
-      <div className="card">
-        <div className="card-header">
+      <div className="card bg-white dark:bg-gray-800">
+        <div className="card-header bg-white dark:bg-gray-800">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Platform Handles</h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
             Connect your competitive programming accounts to fetch your stats
           </p>
         </div>
-        <div className="card-body">
+        <div className="card-body bg-white dark:bg-gray-800">
           <form onSubmit={handleHandlesSubmit} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -164,7 +164,7 @@ const Profile = () => {
                   value={handlesForm.leetcode}
                   onChange={handleHandlesChange}
                   placeholder="Enter your LeetCode username"
-                  className="input"
+                  className="input bg-gray-50 dark:bg-gray-800"
                 />
               </div>
 
@@ -178,7 +178,7 @@ const Profile = () => {
                   value={handlesForm.codeforces}
                   onChange={handleHandlesChange}
                   placeholder="Enter your Codeforces handle"
-                  className="input"
+                  className="input bg-gray-50 dark:bg-gray-800"
                 />
               </div>
             </div>
@@ -197,11 +197,11 @@ const Profile = () => {
       </div>
 
       {/* Profile Info */}
-      <div className="card">
-        <div className="card-header">
+      <div className="card bg-white dark:bg-gray-800">
+        <div className="card-header bg-white dark:bg-gray-800">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Profile Information</h3>
         </div>
-        <div className="card-body">
+        <div className="card-body bg-white dark:bg-gray-800">
           <form onSubmit={handleProfileSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -212,7 +212,7 @@ const Profile = () => {
                   type="text"
                   value={user?.username || ''}
                   disabled
-                  className="input bg-gray-50 dark:bg-gray-700 cursor-not-allowed"
+                  className="input bg-gray-50 dark:bg-gray-800 cursor-not-allowed"
                 />
               </div>
               
@@ -224,7 +224,7 @@ const Profile = () => {
                   type="email"
                   value={user?.email || ''}
                   disabled
-                  className="input bg-gray-50 dark:bg-gray-700 cursor-not-allowed"
+                  className="input bg-gray-50 dark:bg-gray-800 cursor-not-allowed"
                 />
               </div>
 
@@ -238,7 +238,7 @@ const Profile = () => {
                   value={profileForm.name}
                   onChange={handleProfileChange}
                   placeholder="Enter your display name"
-                  className="input"
+                  className="input bg-gray-50 dark:bg-gray-800"
                 />
               </div>
 
@@ -252,7 +252,7 @@ const Profile = () => {
                   value={profileForm.location}
                   onChange={handleProfileChange}
                   placeholder="Enter your location"
-                  className="input"
+                  className="input bg-gray-50 dark:bg-gray-800"
                 />
               </div>
 
@@ -266,7 +266,7 @@ const Profile = () => {
                   value={profileForm.bio}
                   onChange={handleProfileChange}
                   placeholder="Tell us about yourself..."
-                  className="input resize-none"
+                  className="input bg-gray-50 dark:bg-gray-800 resize-none"
                 />
               </div>
 
@@ -280,7 +280,7 @@ const Profile = () => {
                   value={profileForm.website}
                   onChange={handleProfileChange}
                   placeholder="https://your-website.com"
-                  className="input"
+                  className="input bg-gray-50 dark:bg-gray-800"
                 />
               </div>
             </div>
@@ -299,11 +299,11 @@ const Profile = () => {
       </div>
 
       {/* Preferences */}
-      <div className="card">
-        <div className="card-header">
+      <div className="card bg-white dark:bg-gray-800">
+        <div className="card-header bg-white dark:bg-gray-800">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Preferences</h3>
         </div>
-        <div className="card-body">
+        <div className="card-body bg-white dark:bg-gray-800">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>

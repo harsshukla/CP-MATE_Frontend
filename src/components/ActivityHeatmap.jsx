@@ -104,11 +104,11 @@ const ActivityHeatmap = ({ data = [], title = 'Activity Heatmap', className = ''
   }, [])
 
   return (
-    <div className={`card ${className}`} ref={containerRef} style={{ position: 'relative' }}>
-      <div className="card-header p-3 sm:p-4 md:p-6">
+    <div className={`card ${className} bg-white dark:bg-gray-800`} ref={containerRef} style={{ position: 'relative' }}>
+      <div className="card-header p-3 sm:p-4 md:p-6 bg-white dark:bg-gray-800">
         <h3 className="text-lg sm:text-xl font-medium text-gray-900 dark:text-white">{title}</h3>
       </div>
-      <div className="card-body p-3 sm:p-4 md:p-6">
+      <div className="card-body p-3 sm:p-4 md:p-6 bg-white dark:bg-gray-800">
         <div className="overflow-x-auto w-full max-w-full">
           <div className="w-full" style={{ minWidth: 0 }}>
             <CalendarHeatmap

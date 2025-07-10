@@ -26,7 +26,7 @@ const StatsCard = ({
   }
 
   return (
-    <div className={`card break-words w-full ${className}`}>
+    <div className={`card break-words w-full ${className} bg-white dark:bg-gray-800`}>
       <div className="card-body p-3 sm:p-4 md:p-6 text-sm sm:text-base w-full">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 min-w-0 w-full">
           <div className="flex items-center min-w-0 w-full">

@@ -59,6 +59,14 @@ export const statsAPI = {
   getDashboard: () => api.get('/stats/dashboard'),
 }
 
+// Contests API
+export const contestsAPI = {
+  getUpcoming: () => api.get('/contests/upcoming'),
+  getMonthly: (year, month) => api.get(`/contests/monthly/${year}/${month}`),
+  getCodeforces: () => api.get('/contests/codeforces'),
+  getLeetCode: () => api.get('/contests/leetcode'),
+}
+
 // LeetCode API
 export const leetcodeAPI = {
   getContestHistory: (username) => api.get(`/leetcode/contest/${username}`),

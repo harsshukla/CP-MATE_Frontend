@@ -50,8 +50,8 @@ const RatingGraph = ({ data = [], title = 'Rating Progress', platform = '', clas
   }
 
   return (
-    <div className={`card w-full ${className}`}>
-      <div className="card-header flex flex-col md:flex-row md:items-center md:justify-between p-3 sm:p-4 md:p-6">
+    <div className={`card w-full ${className} bg-white dark:bg-gray-800`}>
+      <div className="card-header flex flex-col md:flex-row md:items-center md:justify-between p-3 sm:p-4 md:p-6 bg-white dark:bg-gray-800">
         <h3 className="text-lg sm:text-xl font-medium text-gray-900 dark:text-white">
           {title} {platform && `(${platform})`}
         </h3>
@@ -64,7 +64,7 @@ const RatingGraph = ({ data = [], title = 'Rating Progress', platform = '', clas
           </div>
         )}
       </div>
-      <div className="card-body p-3 sm:p-4 md:p-6">
+      <div className="card-body p-3 sm:p-4 md:p-6 bg-white dark:bg-gray-800">
         {chartData.length > 0 ? (
           <div className="h-64 w-full overflow-x-auto">
             <ResponsiveContainer width="100%" height="100%">

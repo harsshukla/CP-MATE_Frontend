@@ -48,14 +48,14 @@ const ContestTable = ({ contests = [], title = 'Recent Contests', platform = '',
   });
 
   return (
-    <div className={`card ${className} w-full`}>
-      <div className="card-header flex items-center justify-between min-w-0 w-full">
+    <div className={`card bg-white dark:bg-gray-800 ${className} w-full`}>
+      <div className="card-header bg-white dark:bg-gray-800 flex items-center justify-between min-w-0 w-full">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate">{title}</h3>
         <span className="ml-4 inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full dark:bg-blue-900 dark:text-blue-200 truncate">
           Contests Given: {contests.length}
         </span>
       </div>
-      <div className="card-body min-w-0 w-full">
+      <div className="card-body bg-white dark:bg-gray-800 min-w-0 w-full">
         {contestsWithDelta.length > 0 ? (
           <div className="overflow-x-auto w-full min-w-0">
             <div style={{ maxHeight: '400px', overflowY: 'auto' }} className="min-w-0 w-full">
