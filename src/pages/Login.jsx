@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
@@ -13,6 +13,30 @@ const Login = () => {
   
   const { login, error, clearError } = useAuth()
   const navigate = useNavigate()
+
+  // Handle Google OAuth callback
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const error = params.get('error');
+    
+    if (error) {
+      console.error('Google OAuth error:', error);
+      // You can show an error message here
+      return;
+    }
+    
+    if (token) {
+      // Store the token
+      localStorage.setItem('token', token);
+      
+      // Clear the URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Redirect to dashboard
+      navigate('/dashboard');
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target
